@@ -632,7 +632,7 @@ MiniDiff.gen_source.git = function()
   local attach = function(buf_id)
     -- Try attaching to a buffer only once
     if H.git_cache[buf_id] ~= nil then return false end
-    local path = vim.api.nvim_buf_get_name(buf_id)
+    local path = vim.fn.resolve(vim.api.nvim_buf_get_name(buf_id))
     if path == '' or vim.fn.filereadable(path) ~= 1 then return false end
 
     H.git_cache[buf_id] = {}
@@ -646,7 +646,7 @@ MiniDiff.gen_source.git = function()
   end
 
   local apply_hunks = function(buf_id, hunks)
-    local path_data = H.git_get_path_data(vim.api.nvim_buf_get_name(buf_id))
+    local path_data = H.git_get_path_data(vim.fn.resolve(vim.api.nvim_buf_get_name(buf_id)))
     if path_data == nil or path_data.rel_path == nil then return end
     local patch = H.git_format_patch(buf_id, hunks, path_data)
     H.git_apply_patch(path_data, patch)
@@ -1572,7 +1572,7 @@ H.export_qf = function(opts)
 
   local res = {}
   for _, buf_id in ipairs(buffers) do
-    local filename = vim.api.nvim_buf_get_name(buf_id)
+    local filename = vim.fn.resolve(vim.api.nvim_buf_get_name(buf_id))
     for _, h in ipairs(H.cache[buf_id].hunks) do
       local entry = { bufnr = buf_id, filename = filename, type = h.type:sub(1, 1):upper() }
       entry.lnum, entry.end_lnum = H.get_hunk_buf_range(h)
@@ -1638,7 +1638,7 @@ H.git_set_ref_text = vim.schedule_wrap(function(buf_id)
   local buf_set_ref_text = vim.schedule_wrap(function(text) pcall(MiniDiff.set_ref_text, buf_id, text) end)
 
   -- NOTE: Do not cache buffer's name to react to its possible rename
-  local path = vim.api.nvim_buf_get_name(buf_id)
+  local path = vim.fn.resolve(vim.api.nvim_buf_get_name(buf_id))
   if path == '' then return buf_set_ref_text({}) end
   local cwd, basename = vim.fn.fnamemodify(path, ':h'), vim.fn.fnamemodify(path, ':t')
 
